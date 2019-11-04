@@ -1,9 +1,11 @@
+import java.util.*;
 
 class Project3
 {
   static public int event = 9;
   static public int coordinate = 9;
   static public int [][] DP_table = new int[(2 * coordinate) + 1][event];
+  static public Set<Integer> path = new HashSet<Integer>();
 
   // static public int event = 3;
   // static public int coordinate = 3;
@@ -52,9 +54,9 @@ class Project3
       for (int i = 0; i < event; i++) {
         if (time == astronomicalEvent[i] && pos == astronomicalCoordinate[i]) {
           score ++;
-          System.out.println("astronomicalEvent found");
-          System.out.println("  Event = " + time);
-          System.out.println("  Coordinate = " + pos);
+          // System.out.println("astronomicalEvent found");
+          // System.out.println("  Event = " + time);
+          // System.out.println("  Coordinate = " + pos);
         }
       }
 
@@ -65,11 +67,55 @@ class Project3
       if ( (pos + 1) < ((2 * coordinate) + 1) && (time + 1) < event ) { recur((pos + 1), (time + 1), score); }       // +1
       if ( (time + 1) < event ) {   recur(pos, (time + 1), score); }                                                 // 0
       if ( (pos - 1) >= 0 && (time + 1) < event ) { recur((pos - 1), (time + 1), score); }                           // -1
-
-
-
     }
   // end of recur
+  }
+
+  public void traceback (int pos, int time, int score) {
+    // base case:
+    if (time == 0 && pos == 8) { path.add(time + 1); }
+    // traceback to find correct path
+    else {
+      // only adding the events that matches an astronomical event
+      for (int i = 0; i < event; i++) {
+        if (time == astronomicalEvent[i] && pos == astronomicalCoordinate[i]) {
+          path.add(time + 1);
+        }
+      }
+
+      // move through the table along the highest scoring path
+      // check min position using score and call traceback
+      if ( (pos - 1)  >= 0 &&
+           (time - 1) >= 0 ) {
+         int test_score = DP_table[pos - 1][time - 1];
+         if (test_score == score || test_score == score - 1) {
+           // call traceback
+           traceback ( (pos - 1), (time - 1), test_score);
+         }
+      }
+
+      // check max position using score and call traceback
+      if ((pos + 1) < (2 * coordinate + 1) &&
+          (time - 1) >= 0 ) {
+         int test_score = DP_table[pos + 1][time - 1];
+         if (test_score == score || test_score == score - 1) {
+           // call traceback
+           traceback( (pos + 1), (time - 1), test_score);
+         }
+      }
+
+      // check same positon using score and call traceback
+      if ((time - 1) >= 0) {
+         int test_score = DP_table[pos][time - 1];
+         if (test_score == score || test_score == score - 1) {
+           // call traceback
+           traceback( (pos), (time - 1), test_score);
+         }
+      }
+
+    }
+
+  // end of traceback
   }
 
 
@@ -88,6 +134,16 @@ class Project3
        }
        System.out.println();
      }
+
+     // conducting traceback
+     // ending point: time = 9 (aka according to DP_table = 8), coordinate = -2 (aka according to DP_table = 11)
+     int end_time = 8;
+     int end_pos = 11;
+     int end_pos_score = proj3.DP_table[end_pos][end_time];
+     proj3.traceback(end_pos, end_time, end_pos_score);
+
+     // print traceback
+     System.out.println("Path: " + proj3.path);
 
  // end of main
  }
